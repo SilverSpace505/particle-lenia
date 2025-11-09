@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Particle Lenia</title>
+    <link rel="stylesheet" href="src/style.css" />
+  </head>
+  <body>
+    <canvas id="canvas" width="500px" height="500px"></canvas>
+
+    <h1>Particle Lenia</h1>
+
+    <p id="title-desc">Weird particles</p>
+
+    <div id="stats"></div>
+
+    <div id="topright">
+      <div style="height: 10px"></div>
+      <p>Kernel</p>
+      <canvas id="kernel" width="200px" height="200px"></canvas>
+
+      <div style="height: 25px"></div>
+      <p>Growth</p>
+      <canvas id="growth" width="200px" height="100px"></canvas>
+    </div>
+
+    <div id="bottomright">
+      <p>Save / Load</p>
+      <input id="save" type="text" /> 
+      <div style="height: 15px"></div>
+      <button id="load">Load</button>
+    </div>
+
+    <p id="controls">
+      (R) Randomize settings <br> 
+      (E) Randomize settings + new world <br> 
+      (Q) Start/stop search <br> 
+      (WASD) Move camera <br />
+      (Space) Toggle particle visibility <br />
+      (Left mouse) Draw particles <br />
+      (X + Left mouse) Delete particles <br />
+      (1-5) Switch channel <br />
+      (0) All channels <br />
+      (F/G) Scale Resolution <br />
+      (Z) Toggle chunk visibility <br />
+    </p>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
