@@ -9,18 +9,17 @@
   <body>
     <canvas id="canvas" width="500px" height="500px"></canvas>
 
-    <h1>Particle Lenia</h1>
+    <!-- <h1>Particle Lenia</h1> -->
 
-    <p id="title-desc">Weird particles</p>
+    <!-- <p id="title-desc">Weird particles</p> -->
 
     <div id="stats"></div>
 
     <div id="topright">
-      <div style="height: 10px"></div>
-      <p>Kernel</p>
+      <!-- <div style="height: 10px"></div> -->
+      <!-- <p>Kernel</p> -->
       <canvas id="kernel" width="200px" height="200px"></canvas>
 
-      <div style="height: 25px"></div>
       <p>Growth</p>
       <canvas id="growth" width="200px" height="100px"></canvas>
     </div>
@@ -32,19 +31,26 @@
       <button id="load">Load</button>
     </div>
 
-    <p id="controls">
-      (R) Randomize settings <br> 
-      (E) Randomize settings + new world <br> 
-      (Q) Start/stop search <br> 
-      (WASD) Move camera <br />
-      (Space) Toggle particle visibility <br />
-      (Left mouse) Draw particles <br />
-      (X + Left mouse) Delete particles <br />
-      (1-5) Switch channel <br />
-      (0) All channels <br />
-      (F/G) Scale Resolution <br />
-      (Z) Toggle chunk visibility <br />
-    </p>
+    <div id="controls">
+      <p>
+        (R) Randomize settings <br> 
+        (E) Randomize settings + new world <br> 
+        (Q) Start/stop search <br> 
+        (WASD) Move camera <br>
+        (Space) Toggle particle visibility <br>
+        (Left mouse) Draw particles <br>
+        (X + Left mouse) Delete particles <br>
+        (1-5) Switch channel <br>
+        (0) All channels <br>
+        (F/G) Scale Resolution <br>
+        (Z) Toggle chunk visibility <br>
+        (Shift/X) Show interaction radius <br>
+        (Shift + Left mouse) Attract particles <br>
+        (Shift + X + Left mouse) Repel particles <br>
+        (Shift + E/Q) Change interaction radius <br>
+      </p>
+      <span>Controls</span>
+    </div>
 
     <script type="module" src="/src/main.ts"></script>
   </body>

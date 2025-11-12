@@ -19,6 +19,14 @@ h1 {
   position: relative;
 }
 
+#kernel {
+  display: none;
+}
+
+#topright p {
+  margin-top: 10px;
+}
+
 #center {
   width: 100%;
   display: flex;
@@ -26,11 +34,11 @@ h1 {
   justify-content: center;
 }
 
-p {
+/* p {
   line-height: 0.3em;
   z-index: 3;
   position: relative;
-}
+} */
 
 #title-desc {
   text-align: center;
@@ -47,30 +55,73 @@ p {
 
 #topright {
   position: absolute;
-  right: 0;
-  top: 0;
+  right: 5px;
+  top: 5px;
+  background-color: rgba(50, 50, 50, 0.5);
+  padding: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 20px;
 }
 
 #controls {
   position: absolute;
   left: 20px;
   bottom: 5px;
+  width: 80px;
+  height: 30px;
+  background-color: rgba(50, 50, 50, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 20px;
+  padding: 10px;
+  transition: all 0.5s ease;
+}
+
+#controls:hover {
+  width: 325px;
+  height: 335px;
+}
+
+#controls span {
+  position: absolute;
+  left: 20px;
+  bottom: 15px;
+}
+
+#controls p {
+  opacity: 0;
+  position: relative;
+  bottom: 15px;
+  transition: all 0.5s ease;
+  width: 325px;
   line-height: 20px;
+  translate: -50% 0;
+  scale: 0;
+}
+
+#controls:hover p {
+  opacity: 1;
+  scale: 1;
+  translate: 0 0 ;
+  transition: all 0.5s ease;
 }
 
 #bottomright {
   position: absolute;
-  right: 0;
-  bottom: 0;
+  right: 5px;
+  bottom: 5px;
   display: flex;
   flex-direction: column;
-  padding: 20px;
   justify-content: center;
   align-items: center;
+  background-color: rgba(50, 50, 50, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 20px;
+  padding: 10px;
 }
 
 #bottomright p {
   text-align: center;
+  margin-top: 0;
 }
 
 input {
@@ -98,4 +149,54 @@ button:hover {
 }
 button:active {
   width: 80%;
+}
+
+#stats {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  background-color: rgba(50, 50, 50, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 20px;
+  padding: 5px 10px;
+}
+
+.category {
+  background-color: rgba(50, 50, 50, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+  margin: 5px 0;
+  padding: 10px 5px;
+  transition: all 0.5s ease;
+}
+
+.category div {
+  opacity: 0;
+  transition: all 0.5s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.category div p {
+  display: block;
+  font-size: 0;
+  margin: 0;
+  line-height: 0px;
+  /* height: 0; */
+  transition: all 0.5s ease;
+}
+
+.expand {
+  background-color: rgba(75, 75, 75, 0.5);
+}
+
+.expand div {
+  opacity: 1;
+}
+
+.expand div p {
+  font-size: 15px;
+  line-height: 20px;
+  /* height: 15px; */
 }
