@@ -99,7 +99,7 @@ export function tsc(
   cy: number,
   cz: number,
   canvas: HTMLCanvasElement,
-) {
+): [number, number] {
   const a = canvas.width / canvas.height;
   return [((x + cx) / a) * cz + 0.5, (y - cy) * cz + 0.5];
 }
@@ -111,7 +111,7 @@ export function fsc(
   cy: number,
   cz: number,
   canvas: HTMLCanvasElement,
-) {
+): [number, number] {
   const a = canvas.width / canvas.height;
 
   return [((x - 0.5) / cz) * a - cx, 1 - (1 - y - 0.5) / cz - cy];

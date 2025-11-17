@@ -1,6 +1,7 @@
 export const keys: Record<string, boolean> = {};
 
 window.addEventListener('keydown', (event: KeyboardEvent) => {
+  if (document.activeElement?.tagName == 'INPUT') return;
   keys[event.code] = true;
 });
 

@@ -2,6 +2,20 @@ import { fsc, getForce, tsc } from './sim-utils';
 import type { Camera, DisplayName, Particle } from './state';
 import { setSim } from './wgpu';
 
+export interface SimSave {
+  m: number[][][];
+  s: number[][][];
+  mul: number[][][];
+  rings: number[][];
+  gm: number[];
+  gs: number[];
+  speed: number;
+  friction: number;
+  r: number;
+  channels: number;
+  v: number;
+}
+
 export class Sim {
   allTicks = 0;
   tests = 0;
@@ -437,7 +451,10 @@ export class Sim {
   }
   onUpdate() {}
   save() {
-    return JSON.stringify({
+    return JSON.stringify(this.saveObj());
+  }
+  saveObj() {
+    return {
       m: this.m,
       s: this.s,
       mul: this.mul,
@@ -449,24 +466,57 @@ export class Sim {
       r: this.r,
       channels: this.channels,
       v: 1,
-    });
+    };
   }
-  load(save: string) {
-    const loaded = JSON.parse(save);
-    this.m = loaded.m;
-    this.s = loaded.s;
-    this.mul = loaded.mul;
-    this.rings = loaded.rings;
-    this.gm = loaded.gm;
-    this.gs = loaded.gs;
-    if (loaded.speed) this.speed = loaded.speed;
-    if (loaded.friciton) this.friction = loaded.friction;
-    if (loaded.r) {
-      this.r = loaded.r;
+  loadObj(save: SimSave) {
+    this.m = save.m;
+    this.s = save.s;
+    this.mul = save.mul;
+    this.rings = save.rings;
+    this.gm = save.gm;
+    this.gs = save.gs;
+    if (save.speed) this.speed = save.speed;
+    if (save.friction) this.friction = save.friction;
+    if (save.r) {
+      this.r = save.r;
       this.chunkSize = this.r * 2;
     }
-    if (loaded.channels) this.channels = loaded.channels;
+    if (save.channels) this.channels = save.channels;
     this.onUpdate();
     this.setGPU();
+  }
+  load(save: string) {
+    this.loadObj(JSON.parse(save));
+  }
+  getParticles(x1: number, y1: number, x2: number, y2: number, c: number) {
+    const minx = Math.min(x1, x2);
+    const maxx = Math.max(x1, x2);
+    const miny = Math.min(y1, y2);
+    const maxy = Math.max(y1, y2);
+
+    const particles: Particle[][] = [];
+
+    for (let c2 = 0; c2 < this.channels; c2++) {
+      const channel: Particle[] = [];
+      if (c != -1 && c != c2) {
+        particles.push(channel);
+        continue;
+      }
+
+      for (const particle of this.particles[c2]) {
+        if (
+          particle[0] >= minx &&
+          particle[0] <= maxx &&
+          particle[1] >= miny &&
+          particle[1] <= maxy
+        ) {
+          channel.push([...particle]);
+        }
+      }
+
+      particles.push(channel);
+    }
+
+    return particles;
   }
 }

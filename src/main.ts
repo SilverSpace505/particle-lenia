@@ -15,18 +15,25 @@ import {
   channels,
   displayCategories,
   type DisplayName,
+  type Particle,
 } from './state';
-import { Sim } from './sim';
-import { renderGrowth, renderKernel } from './sim-utils';
+import { Sim, type SimSave } from './sim';
+import { fsc, renderGrowth, renderKernel, tsc } from './sim-utils';
+
+import { socket } from './network';
 
 declare global {
   interface Window {
     saves: string[];
     longest: { ticks: number; save: string }[];
     loadedData: unknown;
+    capturedCreature: Particle[][];
+    saveCreature: (creature: Particle[][]) => void;
+    loadCreature: (save: string) => void;
     loadSave: (save: string) => void;
     loadJSONFile: () => void;
     downloadObject: (exportObj: unknown, exportName: string) => void;
+    downloadCreature: (name: string) => void;
   }
 }
 
@@ -132,6 +139,8 @@ const gpuctx = gpucanvas.getContext('webgpu');
 const saveInput = document.getElementById('save') as HTMLInputElement;
 const loadBtn = document.getElementById('load') as HTMLButtonElement;
 
+const captureBtn = document.getElementById('capture') as HTMLButtonElement;
+
 const grid: number[] = [];
 
 sim.reset();
@@ -185,7 +194,15 @@ saveInput.value = sim.save();
 function tick() {
   const start = performance.now();
 
-  sim.tick(keys, mouse, camera, canvas, displays, mc, interactRange);
+  sim.tick(
+    keys,
+    { ...mouse, down: mouse.down && capturePhase == -1 },
+    camera,
+    canvas,
+    displays,
+    mc,
+    interactRange,
+  );
 
   tpsc++;
 
@@ -276,6 +293,50 @@ function update(timestamp: number) {
       interactRange,
     );
 
+  if (ctx && capturePhase == 0) {
+    ctx.beginPath();
+    ctx.moveTo(mouse.x, mouse.y - 10);
+    ctx.lineTo(mouse.x, mouse.y + 10);
+    ctx.moveTo(mouse.x - 10, mouse.y);
+    ctx.lineTo(mouse.x + 10, mouse.y);
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+  }
+
+  if (ctx && capturePhase == 1 && captureStart) {
+    ctx.beginPath();
+    ctx.fillStyle = 'rgba(50, 50, 50, 0.5)';
+    const start = tsc(
+      captureStart[0],
+      captureStart[1],
+      camera.x,
+      camera.y,
+      camera.zoom,
+      canvas,
+    );
+    const p1 = [start[0] * canvas.width, (1 - start[1]) * canvas.height];
+    const p2 = [mouse.x, mouse.y];
+    ctx.fillRect(
+      Math.min(p1[0], p2[0]),
+      Math.min(p1[1], p2[1]),
+      Math.max(p1[0], p2[0]) - Math.min(p1[0], p2[0]),
+      Math.max(p1[1], p2[1]) - Math.min(p1[1], p2[1]),
+    );
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 1;
+    ctx.lineCap = 'round';
+    ctx.setLineDash([5, 5]);
+    ctx.strokeRect(
+      Math.min(p1[0], p2[0]),
+      Math.min(p1[1], p2[1]),
+      Math.max(p1[0], p2[0]) - Math.min(p1[0], p2[0]),
+      Math.max(p1[1], p2[1]) - Math.min(p1[1], p2[1]),
+    );
+    ctx.setLineDash([]);
+  }
+
   cpuTimes.push(performance.now() - start);
   if (cpuTimes.length > 100) cpuTimes.splice(0, 1);
 
@@ -318,9 +379,11 @@ function update(timestamp: number) {
 requestAnimationFrame(update);
 
 document.addEventListener('keydown', (event: KeyboardEvent) => {
+  if (document.activeElement?.tagName == 'INPUT') return;
+
   if (event.code == 'KeyT') timewarp = !timewarp;
   if (event.code == 'KeyP') sim.paused = !sim.paused;
-  if (event.code == 'KeyQ' && !keys.ShiftLeft) {
+  if (event.code == 'KeyQ' && !keys.ShiftLeft && !keys.KeyX) {
     sim.search = !sim.search;
     if (sim.search) {
       timewarp = true;
@@ -363,7 +426,7 @@ document.addEventListener('keydown', (event: KeyboardEvent) => {
     if (gctx)
       renderGrowth(gcanvas, gctx, sim.channels, channelColours, sim.gm, sim.gs);
   }
-  if (event.code == 'KeyE' && !keys.ShiftLeft) {
+  if (event.code == 'KeyE' && !keys.ShiftLeft && !keys.KeyX) {
     sim.reset();
 
     sim.clearParticles();
@@ -421,4 +484,130 @@ sim.onUpdate = () => {
   renderKernel();
   if (gctx)
     renderGrowth(gcanvas, gctx, sim.channels, channelColours, sim.gm, sim.gs);
+};
+
+let capturePhase = -1;
+let captureStart: [number, number] | undefined;
+
+captureBtn.onclick = () => {
+  if (capturePhase == -1) {
+    capturePhase = 0;
+  } else if (capturePhase != 2) {
+    capturePhase = -1;
+  }
+};
+
+canvas.onmousedown = () => {
+  if (capturePhase == 0) {
+    capturePhase = 1;
+    const mp = fsc(
+      mouse.x / canvas.width,
+      mouse.y / canvas.height,
+      camera.x,
+      camera.y,
+      camera.zoom,
+      canvas,
+    );
+    captureStart = [mp[0], 1 - mp[1]];
+  } else if (capturePhase == 1 && captureStart) {
+    captureBtn.classList.add('stable');
+    capturePhase = 2;
+    const mp = fsc(
+      mouse.x / canvas.width,
+      mouse.y / canvas.height,
+      camera.x,
+      camera.y,
+      camera.zoom,
+      canvas,
+    );
+    const particles = sim.getParticles(...captureStart, mp[0], 1 - mp[1], -1);
+    let minx = Infinity;
+    let miny = Infinity;
+    for (const channel of particles) {
+      for (const particle of channel) {
+        minx = Math.min(minx, particle[0]);
+        miny = Math.min(miny, particle[1]);
+      }
+    }
+    for (const channel of particles) {
+      for (const particle of channel) {
+        particle[0] -= minx;
+        particle[1] -= miny;
+      }
+    }
+
+    window.capturedCreature = particles;
+  }
+};
+
+canvas.onmouseup = () => {
+  if (capturePhase == 3) capturePhase = -1;
+};
+
+window.saveCreature = (creature) => {
+  console.log(JSON.stringify({ sim: sim.saveObj(), particles: creature }));
+};
+
+window.loadCreature = (save) => {
+  const saves: { sim: SimSave; particles: Particle[][] } = JSON.parse(save);
+
+  sim.reset();
+  sim.loadObj(saves.sim);
+
+  sim.clearParticles();
+
+  saveInput.value = JSON.stringify(saves.sim);
+  sim.setGPU();
+  renderKernel();
+  if (gctx)
+    renderGrowth(gcanvas, gctx, sim.channels, channelColours, sim.gm, sim.gs);
+
+  for (let c = 0; c < saves.particles.length; c++) {
+    sim.particles[c].push(...saves.particles[c]);
+  }
+};
+
+const cCopyBtn = document.getElementById('cCopyBtn') as HTMLButtonElement;
+
+cCopyBtn.onclick = () => {
+  if (capturePhase != 2) return;
+  capturePhase = 3;
+  captureBtn.classList.remove('stable');
+  navigator.clipboard.writeText(
+    JSON.stringify({ sim: sim.saveObj(), particles: window.capturedCreature }),
+  );
+};
+
+const cCancelBtn = document.getElementById('cCancelBtn') as HTMLButtonElement;
+
+cCancelBtn.onclick = () => {
+  if (capturePhase != 2) return;
+  capturePhase = 3;
+  captureBtn.classList.remove('stable');
+};
+
+const cName = document.getElementById('cName') as HTMLInputElement;
+const cUploadBtn = document.getElementById('cUploadBtn') as HTMLButtonElement;
+
+cUploadBtn.onclick = () => {
+  if (cName.value.length < 3) return;
+  if (capturePhase != 2) return;
+  capturePhase = 3;
+  captureBtn.classList.remove('stable');
+
+  socket.emit(
+    'uploadC',
+    cName.value,
+    JSON.stringify({ sim: sim.saveObj(), particles: window.capturedCreature }),
+  );
+
+  cName.value = '';
+};
+
+window.downloadCreature = (name) => {
+  socket.emit('downloadC', name, (creature: string) => {
+    if (creature) {
+      window.loadCreature(creature);
+    }
+  });
 };

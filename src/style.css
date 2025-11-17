@@ -65,6 +65,7 @@ h1 {
 
 #controls {
   position: absolute;
+  z-index: 10;
   left: 20px;
   bottom: 5px;
   width: 80px;
@@ -153,6 +154,7 @@ button:active {
 
 #stats {
   position: absolute;
+  z-index: 3;
   top: 5px;
   left: 5px;
   background-color: rgba(50, 50, 50, 0.5);
@@ -167,7 +169,12 @@ button:active {
   border-radius: 10px;
   margin: 5px 0;
   padding: 10px 5px;
-  transition: all 0.5s ease;
+  transition: all 0.5s ease, filter 0.3s ease, scale 0.3s ease;
+}
+
+.category:hover {
+  filter: brightness(1.1);
+  scale: 1.025;
 }
 
 .category div {
@@ -199,4 +206,145 @@ button:active {
   font-size: 15px;
   line-height: 20px;
   /* height: 15px; */
+}
+
+#tools {
+  /* background-color: rgba(50, 50, 50, 0.5); */
+  /* border: 2px solid rgba(255, 255, 255, 0.5); */
+  position: absolute;
+  padding: 5px;
+  /* border-radius: 30px; */
+  top: 50%;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  translate: 0 -50%;
+  z-index: 2;
+}
+
+#tools div {
+  width: 75px;
+  height: 75px;
+  border-radius: 30px;
+  background-color: rgba(50, 50, 50, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  background-size: 75%;
+  background-position: center;
+  background-repeat: no-repeat;
+  scale: 1;
+  transition: all 0.3s ease;
+  z-index: 2;
+}
+
+#tools div:hover {
+  scale: 0.95;
+  filter: brightness(1.1);
+}
+
+#tools .stable:hover {
+  scale: 1;
+  filter: brightness(1);
+}
+
+#tools div:active {
+  scale: 0.8;
+  filter: brightness(1.2);
+}
+
+#tools div span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 200px;
+  translate: 0 -50%;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 1;
+}
+
+#tools div:hover span {
+  left: calc(100% + 10px);
+  opacity: 1;
+} 
+
+#tools .stable:hover span {
+  left: 50%;
+  opacity: 0;
+} 
+
+
+#edit {
+  background-image: url(/edit.png);
+}
+
+#upload {
+  background-image: url(/upload.png);
+}
+
+#browse {
+  background-image: url(/browse.png);
+}
+
+#capture {
+  background-image: url(/capture.png);
+}
+
+#tools div #captureActions {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: 0 -50%;
+  width: 150px;
+  height: 125px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px;
+  opacity: 0;
+  scale: 0;
+}
+
+#tools .stable #captureActions {
+  opacity: 1;
+  scale: 1;
+  left: calc(100% + 10px);
+}
+
+#tools #captureActions:hover {
+  filter: brightness(1);
+}
+
+#captureActions button {
+  width: 100%;
+  height: 50%;
+  border: 1px solid white;
+}
+
+#captureActions input {
+  height: 50%;
+  border: 1px solid white;
+  border-radius: 10px;
+}
+
+#captureActions button:hover {
+  scale: 0.95;
+  filter: brightness(1.2)
+}
+
+#captureActions button:active {
+  scale: 0.85;
+  filter: brightness(1.2)
+}
+
+#cUploadBtn {
+  background-color: rgba(0, 127, 255, 0.5);
+}
+
+#cCopyBtn {
+  background-color: rgba(0, 255, 0, 0.5);
+}
+
+#cCancelBtn {
+  background-color: rgba(255, 0, 0, 0.5);
 }
